@@ -208,9 +208,11 @@ $db = new Database($config['db_host'], $config['db_user'], $config['db_pass'], $
 $conditions = array('stu_age > ?');
 $params = array(25);
 $fields = array('id', 'stu_name', 'stu_age', 'stu_from');
+$limit = 3; // 查询限制条数
+$orderBy = 'id DESC'; // 排序方式
 
-// 执行（表、条件、绑定条件参数、limit(int)、需要查询的字段）
-$selectedData = $db->select('students', $conditions, $params, null, $fields);
+// 执行
+$selectedData = $db->select('students', $conditions, $params, $fields, $limit, $orderBy);
 
 // 执行结果
 if ($selectedData) {
