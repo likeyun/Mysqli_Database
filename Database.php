@@ -104,7 +104,7 @@ class Database
     }
     
     // 高级查询
-    public function select($table, $conditions = [], $params = [], $limit = null, $fields = ['*'])
+    public function select($table, $conditions = [], $params = [], $fields = ['*'], $limit = '', $orderBy = '')
     {
         $fields = implode(', ', $fields);
         $whereClause = '';
@@ -113,16 +113,21 @@ class Database
             $whereClause = ' WHERE ' . implode(' AND ', $conditions);
         }
 
+        $orderByClause = '';
+        if (!empty($orderBy)) {
+            $orderByClause = ' ORDER BY ' . $orderBy;
+        }
+
         $limitClause = '';
-        if ($limit !== null) {
+        if (!empty($limit)) {
             $limitClause = ' LIMIT ' . $limit;
         }
 
-        $sql = "SELECT $fields FROM $table $whereClause $limitClause";
+        $sql = "SELECT $fields FROM $table $whereClause $orderByClause $limitClause";
         $stmt = $this->conn->prepare($sql);
 
         if ($stmt === false) {
-            die("预处理失败：" . $this->conn->error);
+            die("预处理查询失败：" . $this->conn->error);
         }
 
         $types = '';
@@ -147,11 +152,19 @@ class Database
         }
 
         $stmt->execute();
-        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $result = $stmt->get_result();
+
+        if ($result === false) {
+            die("执行查询失败：" . $stmt->error);
+        }
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
 
         $stmt->close();
-
-        return $result;
+        return $data;
     }
     
     // 插入数据
